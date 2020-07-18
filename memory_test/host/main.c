@@ -135,9 +135,9 @@ int * getCPUusage(){
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
-    int total1 = *(time1 + 0) + *(time1 + 1) + *(time1 + 2)+ *(time1 + 3) + *(time1 + 4)+ *(time1 + 5) + *(time1 + 6)+ *(time1 + 7);
+    	int total1 = *(time1 + 0) + *(time1 + 1) + *(time1 + 2)+ *(time1 + 3) + *(time1 + 4)+ *(time1 + 5) + *(time1 + 6)+ *(time1 + 7);
 	int total2 = *(time2 + 0) + *(time2 + 1) + *(time2 + 2)+ *(time2 + 3) + *(time2 + 4)+ *(time2 + 5) + *(time2 + 6)+ *(time2 + 7);
-    float usage = ((float)((total2 - total1) - (idle2 - idle1)) / (total2 - total1)) * 100;
+    	float usage = ((float)((total2 - total1) - (idle2 - idle1)) / (total2 - total1)) * 100;
 	printf("===cpu usage is : %.2f% \n",usage);
 	return usage;
 
@@ -360,7 +360,7 @@ void test(){
             }
         }
 	struct timeval ta_start2, ta_end2;
-    gettimeofday( &ta_start2, NULL );
+    	gettimeofday( &ta_start2, NULL );
 
 	TEEC_CloseSession(&sess);
 
@@ -372,36 +372,36 @@ void test(){
 
 //线程函数
 void *myThread(){
-    double temp;
-    pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
+    	double temp;
+    	pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
 
-    struct timeval start, end;
-    gettimeofday( &start, NULL );
+    	struct timeval start, end;
+    	gettimeofday( &start, NULL );
 
-    test();
+    	test();
 
-    gettimeofday( &end, NULL );
-    temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
-    pthread_mutex_unlock(&mut); //解锁
+    	gettimeofday( &end, NULL );
+    	temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    	pthread_mutex_unlock(&mut); //解锁
 
-    thread_time += temp;
+    	thread_time += temp;
 }
 
 void thread_create(void){
-    // 创建线程
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0;i < num_threads; i ++){
-        pthread_create(&thread[i], NULL, myThread, NULL);
-    }
+    	// 创建线程
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0;i < num_threads; i ++){
+        	pthread_create(&thread[i], NULL, myThread, NULL);
+    	}
 }
 
 void thread_wait(void){
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0; i < num_threads; i ++){
-        pthread_join(thread[i], NULL);
-    }
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0; i < num_threads; i ++){
+        	pthread_join(thread[i], NULL);
+    	}
 }
 
 int memory_init(void){
@@ -420,7 +420,7 @@ int memory_init(void){
         }
 
 
-    return 0;
+    	return 0;
 }
 
 int main(void)
@@ -431,70 +431,70 @@ int main(void)
 	char input[50];
 
 	printf("initialization parameter:\n");
-    printf("memory_block_size: %dK\n",memory_block_size / 1024);
-    printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
-    printf("memory_oper: %s\n",memory_oper);
-    printf("memory_access_mode: %s\n\n",memory_access_mode);
-    printf("If you don't want to change it, just Enter.\n");
-    printf("Input parameters are separated by Spaces. eg.num_threads 1 memory_block_size 2(is 2K)\n");
-    gets(input);
+    	printf("memory_block_size: %dK\n",memory_block_size / 1024);
+    	printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
+    	printf("memory_oper: %s\n",memory_oper);
+    	printf("memory_access_mode: %s\n\n",memory_access_mode);
+    	printf("If you don't want to change it, just Enter.\n");
+    	printf("Input parameters are separated by Spaces. eg.num_threads 1 memory_block_size 2(is 2K)\n");
+    	gets(input);
 
 	time1 = getCPUusage();
 
-    char *ptr, *retptr, *arr[50] = {"0"};
-    int m;
-    long l;
+    	char *ptr, *retptr, *arr[50] = {"0"};
+    	int m;
+    	long l;
 
-    ptr = input;
+    	ptr = input;
 
-    // 把输入参数以空格为分隔符分割开，存入arr
-    while ((retptr = strtok(ptr, " ")) != NULL) {
-        arr[m] = retptr;
-        ptr = NULL;
-        m ++;
-    }
+   	// 把输入参数以空格为分隔符分割开，存入arr
+    	while ((retptr = strtok(ptr, " ")) != NULL) {
+        	arr[m] = retptr;
+        	ptr = NULL;
+        	m ++;
+    	}
 
 	int j;
-    for(j = 0; j < 50; j ++){
-        if(arr[j] != NULL){
-            if(strcmp(arr[j], "num_threads") == 0){
-                num_threads = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "memory_block_size") == 0){
-                memory_block_size = atoi(arr[j+1]) * 1024;
-            } else if(strcmp(arr[j], "memory_total_size") == 0){
-                memory_total_size = atoi(arr[j+1]) * 1024 * 1024;
-            } else if(strcmp(arr[j], "memory_oper") == 0){
-                memory_oper = arr[j+1];
-                if(strcmp(memory_oper, "write") == 0){
-                    memory_oper_num = 1;
-                } else if(strcmp(memory_oper, "read") == 0){
-                    memory_oper_num = 2;
-                } else if(strcmp(memory_oper, "none") == 0){
-                    memory_oper_num = 0;
-                }
-            } else if(strcmp(arr[j], "memory_access_mode") == 0){
-                memory_access_mode = arr[j+1];
-            }
-        }
-    }
+    	for(j = 0; j < 50; j ++){
+        	if(arr[j] != NULL){
+            		if(strcmp(arr[j], "num_threads") == 0){
+                		num_threads = atoi(arr[j+1]);
+           		} else if(strcmp(arr[j], "memory_block_size") == 0){
+                		memory_block_size = atoi(arr[j+1]) * 1024;
+            		} else if(strcmp(arr[j], "memory_total_size") == 0){
+                		memory_total_size = atoi(arr[j+1]) * 1024 * 1024;
+            		} else if(strcmp(arr[j], "memory_oper") == 0){
+                		memory_oper = arr[j+1];
+                		if(strcmp(memory_oper, "write") == 0){
+                    			memory_oper_num = 1;
+                		} else if(strcmp(memory_oper, "read") == 0){
+                    			memory_oper_num = 2;
+                		} else if(strcmp(memory_oper, "none") == 0){
+                   			memory_oper_num = 0;
+                		}
+            		} else if(strcmp(arr[j], "memory_access_mode") == 0){
+                		memory_access_mode = arr[j+1];
+            		}
+        	}
+    	}
 
 
-    printf("\nmemory_block_size: %dK\n",memory_block_size / 1024);
-    printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
-    printf("memory_oper: %s\n",memory_oper);
-    printf("memory_access_mode: %s\n\n",memory_access_mode);
+    	printf("\nmemory_block_size: %dK\n",memory_block_size / 1024);
+    	printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
+    	printf("memory_oper: %s\n",memory_oper);
+    	printf("memory_access_mode: %s\n\n",memory_access_mode);
 
-    struct timeval start, end;
-    gettimeofday( &start, NULL );
+    	struct timeval start, end;
+    	gettimeofday( &start, NULL );
 
-    memory_init();
+    	memory_init();
 
 	pthread_mutex_init(&mut, NULL);
-    thread_create();
-    thread_wait();
+    	thread_create();
+    	thread_wait();
 
 	gettimeofday( &end, NULL );  // 获取执行完后的CPU时间占用值
-    Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    	Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
 
 	time2 = getCPUusage();
 
@@ -506,19 +506,19 @@ int main(void)
 
 	printf("\n------ta time: %.1fμs\n", ta_time);
 
-    printf("Operations performed: %d (%8.2f ops/μs)\n", total_ops, total_ops / Total_time);
-    printf("%4.2f MB transferred (%4.2f MB/μs)\n\n", total_bytes / (1024.0*1024.0) * 1024.0, total_bytes / (1024.0*1024.0) * 1024.0 / Total_time);
+    	printf("Operations performed: %d (%8.2f ops/μs)\n", total_ops, total_ops / Total_time);
+    	printf("%4.2f MB transferred (%4.2f MB/μs)\n\n", total_bytes / (1024.0*1024.0) * 1024.0, total_bytes / (1024.0*1024.0) * 1024.0 / Total_time);
 
-    printf("total time: %.1fμs\n", Total_time); // 总消耗时间
-    printf("all events: %d\n", total_ops); // 所有线程完成的event个数
-    printf("events per micro-second: %.3f \n", total_ops / Total_time); // 所有线程平均每秒完成event的个数
-    printf("The average running time per event: %0.3fμs\n", Total_time / total_ops); // 平均每个event的运行时间
+    	printf("total time: %.1fμs\n", Total_time); // 总消耗时间
+    	printf("all events: %d\n", total_ops); // 所有线程完成的event个数
+    	printf("events per micro-second: %.3f \n", total_ops / Total_time); // 所有线程平均每秒完成event的个数
+    	printf("The average running time per event: %0.3fμs\n", Total_time / total_ops); // 平均每个event的运行时间
 
-    printf("\nthreads: \n");
-    printf("num_threads: %d\n",num_threads);
-    printf("events per thread: %0.3f \n", total_ops / (float)num_threads); // 平均每个线程完成event的个数
-    printf("time per thread: %0.3fμs\n", thread_time / num_threads); // 平均每个线程平均耗时
-    return 0;
+    	printf("\nthreads: \n");
+    	printf("num_threads: %d\n",num_threads);
+    	printf("events per thread: %0.3f \n", total_ops / (float)num_threads); // 平均每个线程完成event的个数
+    	printf("time per thread: %0.3fμs\n", thread_time / num_threads); // 平均每个线程平均耗时
+    	return 0;
 }
 
 
