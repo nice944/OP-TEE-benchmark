@@ -260,26 +260,26 @@ void primeCalculate(){
 }
 
 void test(){
-    struct timeval start, end;  // 定义第一次调用CPU时钟单位的时间，可以理解为定义一个计数器
+    	struct timeval start, end;  // 定义第一次调用CPU时钟单位的时间，可以理解为定义一个计数器
 	gettimeofday( &start, NULL );  // 获取进入要测试执行时间代码段之前的CPU时间占用值
 	int n;
 	for(n = 0; n < max_request; n ++){
-        primeCalculate();
-        request_num ++;
+        	primeCalculate();
+        	request_num ++;
 	}
 
-    gettimeofday( &end, NULL ); // 获取执行完后的CPU时间占用值
-    Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    	gettimeofday( &end, NULL ); // 获取执行完后的CPU时间占用值
+    	Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
 
-    // 如果同时指定了max_request和max_time，则以max_request为主
-    if(max_request == 1 && Total_time < max_time){
-        Total_time = setTimer(Total_time);
-    }
+    	// 如果同时指定了max_request和max_time，则以max_request为主
+    	if(max_request == 1 && Total_time < max_time){
+        	Total_time = setTimer(Total_time);
+    	}
 }
 
 double setTimer(double Total_time){
-    struct timeval start, end;
-    double Total_time2, sum_time;
+    	struct timeval start, end;
+    	double Total_time2, sum_time;
 	gettimeofday( &start, NULL );
 
 	primeCalculate();
@@ -290,120 +290,120 @@ double setTimer(double Total_time){
 	// 再次比较时间
 	sum_time = Total_time + Total_time2;
 	if(sum_time < max_time){
-        setTimer(sum_time);
-    } else {
-        return sum_time;
-    }
+        	setTimer(sum_time);
+    	} else {
+        	return sum_time;
+    	}
 }
 
 //线程函数
 void *myThread(){
-    double temp;
-    pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
+    	double temp;
+    	pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
 
-    struct timeval start, end;
-    gettimeofday( &start, NULL );
+    	struct timeval start, end;
+    	gettimeofday( &start, NULL );
 
-    test();
+    	test();
 
-    gettimeofday( &end, NULL );
-    temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
-    pthread_mutex_unlock(&mut); //解锁
+    	gettimeofday( &end, NULL );
+    	temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    	pthread_mutex_unlock(&mut); //解锁
 
-    thread_time += temp;
+    	thread_time += temp;
 }
 
 void thread_create(void){
-    // 创建线程
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0;i < num_threads; i ++){
-        pthread_create(&thread[i], NULL, myThread, NULL);
-    }
+    	// 创建线程
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0;i < num_threads; i ++){
+        	pthread_create(&thread[i], NULL, myThread, NULL);
+    	}
 }
 
 void thread_wait(void){
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0; i < num_threads; i ++){
-        pthread_join(thread[i], NULL);
-    }
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0; i < num_threads; i ++){
+        	pthread_join(thread[i], NULL);
+    	}
 }
 
 int main(void) {
 
-    int * time1;
-    int * time2;
+    	int * time1;
+    	int * time2;
 
-    char input[50];
+    	char input[50];
 
-    printf("initialization parameter: \n");
-    printf("num_threads: %d\n",num_threads);
-    printf("max_prime: %d\n",max_prime);
-    printf("max_time / μs: %.3f\n",max_time);
-    printf("max_request: %d\n",max_request);
-    printf("If you don't want to change it, just Enter.\n");
-    printf("Input parameters are separated by Spaces. eg. num_threads 1 max_prime 20\n");
-    gets(input);
+    	printf("initialization parameter: \n");
+    	printf("num_threads: %d\n",num_threads);
+    	printf("max_prime: %d\n",max_prime);
+    	printf("max_time / μs: %.3f\n",max_time);
+    	printf("max_request: %d\n",max_request);
+    	printf("If you don't want to change it, just Enter.\n");
+    	printf("Input parameters are separated by Spaces. eg. num_threads 1 max_prime 20\n");
+    	gets(input);
 
-    time1 = getCPUusage();
+    	time1 = getCPUusage();
 
-    char *ptr, *retptr, *arr[50] = {"0"};
-    int i;
-    long l;
+    	char *ptr, *retptr, *arr[50] = {"0"};
+    	int i;
+    	long l;
 
-    ptr = input;
+    	ptr = input;
 
-    // 把输入参数以空格为分隔符分割开，存入arr
-    while ((retptr = strtok(ptr, " ")) != NULL) {
-        arr[i] = retptr;
-        ptr = NULL;
-        i ++;
-    }
+    	// 把输入参数以空格为分隔符分割开，存入arr
+    	while ((retptr = strtok(ptr, " ")) != NULL) {
+        	arr[i] = retptr;
+        	ptr = NULL;
+        	i ++;
+    	}
 
 	int j;
    	for(j = 0; j < 50; j ++){
    	    if(arr[j] != NULL){
    	        if(strcmp(arr[j], "num_threads") == 0){
    	            num_threads = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "max_prime") == 0){
-                max_prime = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "max_time") == 0){
-                max_time = atof(arr[j+1]);
-            } else if(strcmp(arr[j], "max_request") == 0){
-                max_request = atoi(arr[j+1]);
+            	} else if(strcmp(arr[j], "max_prime") == 0){
+                	max_prime = atoi(arr[j+1]);
+            	} else if(strcmp(arr[j], "max_time") == 0){
+                	max_time = atof(arr[j+1]);
+            	} else if(strcmp(arr[j], "max_request") == 0){
+                	max_request = atoi(arr[j+1]);
+            	}
             }
-        }
-    }
+	}
 
-    printf("\nmax_prime: %d\n",max_prime);
-    printf("max_time / μs: %.3f\n",max_time);
-    printf("max_request: %d\n",max_request);
-    printf("(Note: when specifying both 'max_time' and 'max_request', the 'max_request' is the main)\n\n");
+    	printf("\nmax_prime: %d\n",max_prime);
+    	printf("max_time / μs: %.3f\n",max_time);
+    	printf("max_request: %d\n",max_request);
+    	printf("(Note: when specifying both 'max_time' and 'max_request', the 'max_request' is the main)\n\n");
 
-    // 用默认属性初始化互斥锁
-    pthread_mutex_init(&mut, NULL);
-    thread_create();
-    thread_wait();
+    	// 用默认属性初始化互斥锁
+    	pthread_mutex_init(&mut, NULL);
+    	thread_create();
+    	thread_wait();
 
-    time2 = getCPUusage();
+    	time2 = getCPUusage();
 
-    calUsage(time1, time2);
+    	calUsage(time1, time2);
 
-    getRAM();
+    	getRAM();
 
-    getDisk();
+    	getDisk();
 
-    printf("\nCPU speed:\n");
-    printf("all events: %d\n", request_num); // 所有线程完成的event个数
-    printf("events per m-second: %.3f \n", request_num / Total_time); // 所有线程平均每秒完成event的个数
-    printf("The average running time per event: %0.3fms\n", Total_time / request_num); // 平均每个event的运行时间
-    printf("total time: %.1fms\n", Total_time); // 总消耗时间
+    	printf("\nCPU speed:\n");
+    	printf("all events: %d\n", request_num); // 所有线程完成的event个数
+    	printf("events per m-second: %.3f \n", request_num / Total_time); // 所有线程平均每秒完成event的个数
+    	printf("The average running time per event: %0.3fms\n", Total_time / request_num); // 平均每个event的运行时间
+	printf("total time: %.1fms\n", Total_time); // 总消耗时间
 
-    printf("\nthreads:\n");
-    printf("num_threads: %d\n",num_threads);
-    printf("events per thread: %0.3f \n", request_num / (float)num_threads); // 平均每个线程完成envet的个数
-    printf("time per thread: %0.3fms\n", thread_time / num_threads); // 平均每个线程平均耗时
+    	printf("\nthreads:\n");
+    	printf("num_threads: %d\n",num_threads);
+    	printf("events per thread: %0.3f \n", request_num / (float)num_threads); // 平均每个线程完成envet的个数
+    	printf("time per thread: %0.3fms\n", thread_time / num_threads); // 平均每个线程平均耗时
 
-    return 0;
+    	return 0;
 }
