@@ -372,36 +372,36 @@ void test(){
 
 //线程函数
 void *myThread(){
-    double temp;
-    pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
+    	double temp;
+    	pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
 
-    struct timeval start, end;
-    gettimeofday( &start, NULL );
+    	struct timeval start, end;
+    	gettimeofday( &start, NULL );
 
-    test();
+    	test();
 
-    gettimeofday( &end, NULL );
-    temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
-    pthread_mutex_unlock(&mut); //解锁
+    	gettimeofday( &end, NULL );
+    	temp = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    	pthread_mutex_unlock(&mut); //解锁
 
-    thread_time += temp;
+    	thread_time += temp;
 }
 
 void thread_create(void){
-    // 创建线程
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0;i < num_threads; i ++){
-        pthread_create(&thread[i], NULL, myThread, NULL);
-    }
+    	// 创建线程
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0;i < num_threads; i ++){
+        	pthread_create(&thread[i], NULL, myThread, NULL);
+    	}
 }
 
 void thread_wait(void){
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0; i < num_threads; i ++){
-        pthread_join(thread[i], NULL);
-    }
+    	pthread_t thread[num_threads];
+    	int i = 0;
+    	for (i = 0; i < num_threads; i ++){
+        	pthread_join(thread[i], NULL);
+    	}
 }
 
 
@@ -413,45 +413,49 @@ int main(void) {
 
 	char input[50];
 
-	printf("initialization parameter: num_threads = 1, write_num = 10, read_num = 10, TEST_OBJECT_SIZE = 7000\n");
-    printf("If you don't want to change it, just Enter.\n");
-    printf("Input parameters are separated by Spaces. eg. num_threads 1 write_num 20\n");
-    gets(input);
+	printf("initialization parameter: \n");
+    	printf("num_threads: %d\n",num_threads);
+    	printf("write_num: %d\n",write_num);
+    	printf("read_num: %d\n",read_num);
+    	printf("TEST_OBJECT_SIZE: %d\n",TEST_OBJECT_SIZE);
+   	printf("If you don't want to change it, just Enter.\n");
+    	printf("Input parameters are separated by Spaces. eg. num_threads 1 write_num 20\n");
+    	gets(input);
 
 	time1 = getCPUusage();
 
-    char *ptr, *retptr, *arr[50] = {"0"};
-    int i;
-    long l;
+   	char *ptr, *retptr, *arr[50] = {"0"};
+   	int i;
+   	long l;
 
-    ptr = input;
+    	ptr = input;
 
-    // 把输入参数以空格为分隔符分割开，存入arr
-    while ((retptr = strtok(ptr, " ")) != NULL) {
-        arr[i] = retptr;
-        ptr = NULL;
-        i ++;
-    }
+    	// 把输入参数以空格为分隔符分割开，存入arr
+    	while ((retptr = strtok(ptr, " ")) != NULL) {
+        	arr[i] = retptr;
+        	ptr = NULL;
+        	i ++;
+    	}
 
 	int j;
-    for(j = 0; j < 50; j ++){
-        if(arr[j] != NULL){
-            if(strcmp(arr[j], "num_threads") == 0){
-                num_threads = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "write_num") == 0){
-                write_num = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "read_num") == 0){
-                read_num = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "TEST_OBJECT_SIZE") == 0){
-                TEST_OBJECT_SIZE = atoi(arr[j+1]);
-            }
-        }
-    }
+    	for(j = 0; j < 50; j ++){
+        	if(arr[j] != NULL){
+            		if(strcmp(arr[j], "num_threads") == 0){
+                		num_threads = atoi(arr[j+1]);
+            		} else if(strcmp(arr[j], "write_num") == 0){
+                		write_num = atoi(arr[j+1]);
+            		} else if(strcmp(arr[j], "read_num") == 0){
+                		read_num = atoi(arr[j+1]);
+            		} else if(strcmp(arr[j], "TEST_OBJECT_SIZE") == 0){
+                		TEST_OBJECT_SIZE = atoi(arr[j+1]);
+           		}
+        	}
+    	}
 
 	printf("\nnum_threads: %d\n",num_threads);
-    printf("write_num: %d\n",write_num);
-    printf("read_num: %d\n",read_num);
-    printf("TEST_OBJECT_SIZE: %d\n",TEST_OBJECT_SIZE);
+    	printf("write_num: %d\n",write_num);
+    	printf("read_num: %d\n",read_num);
+    	printf("TEST_OBJECT_SIZE: %d\n",TEST_OBJECT_SIZE);
 
 	gettimeofday( &total_start, NULL );
 
@@ -485,7 +489,7 @@ int main(void) {
 		printf("Create object %d\n",m+1);
 	}
 	gettimeofday( &write_end, NULL );
-    write_time = 1000000 * ( write_end.tv_sec - write_start.tv_sec ) + write_end.tv_usec - write_start.tv_usec;
+    	write_time = 1000000 * ( write_end.tv_sec - write_start.tv_sec ) + write_end.tv_usec - write_start.tv_usec;
 
 	struct timeval read_start, read_end;
 	gettimeofday( &read_start, NULL );
@@ -502,7 +506,7 @@ int main(void) {
 		printf("Read object %d\n",m+1);
 	}
 	gettimeofday( &read_end, NULL );
-    read_time = 1000000 * ( read_end.tv_sec - read_start.tv_sec ) + read_end.tv_usec - read_start.tv_usec;
+    	read_time = 1000000 * ( read_end.tv_sec - read_start.tv_sec ) + read_end.tv_usec - read_start.tv_usec;
 
 	struct timeval delete_start, delete_end;
 	gettimeofday( &delete_start, NULL );
@@ -517,7 +521,7 @@ int main(void) {
 	terminate_tee_session(&ctx);
 
 	gettimeofday( &delete_end, NULL );
-    delete_time = 1000000 * ( delete_end.tv_sec - delete_start.tv_sec ) + delete_end.tv_usec - delete_start.tv_usec;
+    	delete_time = 1000000 * ( delete_end.tv_sec - delete_start.tv_sec ) + delete_end.tv_usec - delete_start.tv_usec;
 
 	pthread_mutex_init(&mut, NULL);
     	thread_create();
@@ -537,14 +541,14 @@ int main(void) {
 
 	Total_time = 1000000 * ( total_end.tv_sec - total_start.tv_sec ) + total_end.tv_usec - total_start.tv_usec;
 	printf("total time: %.1fms\n", Total_time); // 总消耗时间
-    printf("file size: %.1fK\n", TEST_OBJECT_SIZE / (float)1024);
-    printf("write num:%d  write time: %.1f\n", write_num, write_time);
-    printf("read num:%d   read time: %.1f\n", read_num, read_time);
+    	printf("file size: %.1fK\n", TEST_OBJECT_SIZE / (float)1024);
+    	printf("write num:%d  write time: %.1f\n", write_num, write_time);
+    	printf("read num:%d   read time: %.1f\n", read_num, read_time);
 	printf("delete time: %.1f\n", delete_time);
 
-    printf("\nthreads:\n");
+    	printf("\nthreads:\n");
 	printf("num_threads: %d\n",num_threads);
-    printf("time per thread: %0.1fms\n", thread_time / num_threads); // 平均每个线程平均耗时
+    	printf("time per thread: %0.1fms\n", thread_time / num_threads); // 平均每个线程平均耗时
 
 	return 0;
 }
