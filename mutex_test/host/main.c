@@ -119,9 +119,9 @@ int * getCPUusage(){
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
-    int total1 = *(time1 + 0) + *(time1 + 1) + *(time1 + 2)+ *(time1 + 3) + *(time1 + 4)+ *(time1 + 5) + *(time1 + 6)+ *(time1 + 7);
+	int total1 = *(time1 + 0) + *(time1 + 1) + *(time1 + 2)+ *(time1 + 3) + *(time1 + 4)+ *(time1 + 5) + *(time1 + 6)+ *(time1 + 7);
 	int total2 = *(time2 + 0) + *(time2 + 1) + *(time2 + 2)+ *(time2 + 3) + *(time2 + 4)+ *(time2 + 5) + *(time2 + 6)+ *(time2 + 7);
-    float usage = ((float)((total2 - total1) - (idle2 - idle1)) / (total2 - total1)) * 100;
+	float usage = ((float)((total2 - total1) - (idle2 - idle1)) / (total2 - total1)) * 100;
 	printf("===cpu usage is : %.2f% \n",usage);
 	return usage;
 
@@ -244,9 +244,9 @@ void *myThread(){
 					 TEEC_NONE, TEEC_NONE);
 	op.params[0].value.a = global_var;
 
-    pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
+	pthread_mutex_lock(&mut); //加锁，用于对共享变量操作
 
-    int i;
+	int i;
 	int temp;
 	temp = mutex_locks;
 	for(; temp > 0; temp--){
@@ -263,9 +263,9 @@ void *myThread(){
 		pthread_mutex_unlock(&thread_locks[current_lock].mutex);
    	}
 
-    request_num ++;
+	request_num ++;
 
-    pthread_mutex_unlock(&mut); //解锁
+	pthread_mutex_unlock(&mut); //解锁
 
 	TEEC_CloseSession(&sess);
 
@@ -274,22 +274,22 @@ void *myThread(){
 }
 
 void thread_create(void){
-    // 创建线程
-    pthread_t thread[num_threads];
-    int i = 0;
+	// 创建线程
+	pthread_t thread[num_threads];
+	int i = 0;
 
-    for (i = 0;i < num_threads; i ++){
-        pthread_create(&thread[i], NULL, myThread, NULL);
-    }
+	for (i = 0;i < num_threads; i ++){
+		pthread_create(&thread[i], NULL, myThread, NULL);
+	}
 
 }
 
 void thread_wait(void){
-    pthread_t thread[num_threads];
-    int i = 0;
-    for (i = 0; i < num_threads; i ++){
-        pthread_join(thread[i], NULL);
-    }
+	pthread_t thread[num_threads];
+	int i = 0;
+	for (i = 0; i < num_threads; i ++){
+		pthread_join(thread[i], NULL);
+	}
 }
 
 int main(void)
@@ -309,59 +309,60 @@ int main(void)
 
 	time1 = getCPUusage();
 
-    char *ptr, *retptr, *arr[50] = {"0"};
-    int i;
-    long l;
+	char *ptr, *retptr, *arr[50] = {"0"};
+	int i;
+	long l;
 
-    ptr = input;
+	ptr = input;
 
-    // 把输入参数以空格为分隔符分割开，存入arr
-    while ((retptr = strtok(ptr, " ")) != NULL) {
-        arr[i] = retptr;
-        ptr = NULL;
-        i ++;
-    }
+	// 把输入参数以空格为分隔符分割开，存入arr
+	while ((retptr = strtok(ptr, " ")) != NULL) {
+		arr[i] = retptr;
+		ptr = NULL;
+		i ++;
+	}
 
 	int j;
-    for(j = 0; j < 50; j ++){
-        if(arr[j] != NULL){
-            if(strcmp(arr[j], "num_threads") == 0){
-                num_threads = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "mutex_num") == 0){
-                mutex_num = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "mutex_loops") == 0){
-                mutex_loops = atoi(arr[j+1]);
-            } else if(strcmp(arr[j], "mutex_locks") == 0){
-                mutex_locks = atoi(arr[j+1]);
-            }
-        }
-    }
+	for(j = 0; j < 50; j ++){
+		if(arr[j] != NULL){
+			if(strcmp(arr[j], "num_threads") == 0){
+				num_threads = atoi(arr[j+1]);
+			} else if(strcmp(arr[j], "mutex_num") == 0){
+				mutex_num = atoi(arr[j+1]);
+			} else if(strcmp(arr[j], "mutex_loops") == 0){
+				mutex_loops = atoi(arr[j+1]);
+			} else if(strcmp(arr[j], "mutex_locks") == 0){
+				mutex_locks = atoi(arr[j+1]);
+			}
+		}
+	}
 
-    printf("\nmutex_num: %d\n",mutex_num);
-    printf("mutex_loops: %d\n",mutex_loops);
-    printf("mutex_locks: %d\n",mutex_locks);
+	printf("\nmutex_num: %d\n",mutex_num);
+	printf("mutex_loops: %d\n",mutex_loops);
+	printf("mutex_locks: %d\n",mutex_locks);
 
-    struct timeval start, end;
-    gettimeofday( &start, NULL );
+	struct timeval start, end;
+	gettimeofday( &start, NULL );
 
-    thread_locks = (thread_lock *)malloc(mutex_num * sizeof(thread_lock));
-    if (thread_locks == NULL) {
-        return 1;
-    }
-    int m;
-    for (m = 0; m < mutex_num; m ++)
-        pthread_mutex_init(&thread_locks[m].mutex, NULL);
+	thread_locks = (thread_lock *)malloc(mutex_num * sizeof(thread_lock));
 
-    thread_create();
-    thread_wait();
+	if (thread_locks == NULL) {
+		return 1;
+	}
 
+	int m;
+	for (m = 0; m < mutex_num; m ++)
+		pthread_mutex_init(&thread_locks[m].mutex, NULL);
 
-    for(m = 0; m < mutex_num; m ++)
-        pthread_mutex_destroy(&thread_locks[m].mutex);
-    free(thread_locks);
+	thread_create();
+	thread_wait();
 
-    gettimeofday( &end, NULL );
-    Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+	for(m = 0; m < mutex_num; m ++)
+		pthread_mutex_destroy(&thread_locks[m].mutex);
+	free(thread_locks);
+
+	gettimeofday( &end, NULL );
+	Total_time = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
 
 	time2 = getCPUusage();
 
@@ -371,16 +372,15 @@ int main(void)
 
 	getDisk();
 
-    printf("\nmutex test: \n");
-    printf("total time: %0.4fms\n", Total_time); // 总消耗时间
-    printf("all events: %d \n", request_num); // 所有线程完成的event个数
-    printf("The average running time per event:%0.4fms\n", Total_time / request_num); // 平均每个event的运行时间
+	printf("\nmutex test: \n");
+	printf("total time: %0.4fms\n", Total_time); // 总消耗时间
+	printf("all events: %d \n", request_num); // 所有线程完成的event个数
+	printf("The average running time per event:%0.4fms\n", Total_time / request_num); // 平均每个event的运行时间
 
-
-    printf("\nthreads:\n");
-    printf("num_threads: %d\n",num_threads);
-    printf("events per thread: %0.4f\n", request_num / (float)num_threads); // 平均每个线程完成envet的个数
-    printf("time per thread: %0.4fms\n", Total_time / num_threads); // 平均每个线程平均耗时
+	printf("\nthreads:\n");
+	printf("num_threads: %d\n",num_threads);
+	printf("events per thread: %0.4f\n", request_num / (float)num_threads); // 平均每个线程完成envet的个数
+	printf("time per thread: %0.4fms\n", Total_time / num_threads); // 平均每个线程平均耗时
 
 	return 0;
 }
