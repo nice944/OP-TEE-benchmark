@@ -299,10 +299,13 @@ int main(void)
 
 	char input[50];
 
-	printf("initialization parameter: num_threads = 1, mutex_num = 4096, mutex_loops = 500, mutex_locks = 100\n");
-    printf("If you don't want to change it, just Enter.\n");
-    printf("Input parameters are separated by Spaces. eg. num_threads 1 mutex_num 4096\n");
-    gets(input);
+	printf("initialization parameter: \n");
+	printf("mutex_num: %d\n",mutex_num);
+	printf("mutex_loops: %d\n",mutex_loops);
+	printf("mutex_locks: %d\n",mutex_locks);
+	printf("If you don't want to change it, just Enter.\n");
+	printf("Input parameters are separated by Spaces. eg. num_threads 1 mutex_num 4096\n");
+	gets(input);
 
 	time1 = getCPUusage();
 
