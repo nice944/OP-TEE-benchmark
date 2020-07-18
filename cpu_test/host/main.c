@@ -332,17 +332,21 @@ void thread_wait(void){
 
 int main(void) {
 
-	int * time1;
-	int * time2;
+    int * time1;
+    int * time2;
 
-	char input[50];
+    char input[50];
 
-	printf("initialization parameter: num_threads = 1, max_prime = 10000, max_time = 0μs, max_request = 1\n");
+    printf("initialization parameter: \n");
+    printf("num_threads: %d\n",num_threads);
+    printf("max_prime: %d\n",max_prime);
+    printf("max_time / μs: %.3f\n",max_time);
+    printf("max_request: %d\n",max_request);
     printf("If you don't want to change it, just Enter.\n");
     printf("Input parameters are separated by Spaces. eg. num_threads 1 max_prime 20\n");
     gets(input);
 
-	time1 = getCPUusage();
+    time1 = getCPUusage();
 
     char *ptr, *retptr, *arr[50] = {"0"};
     int i;
@@ -382,13 +386,13 @@ int main(void) {
     thread_create();
     thread_wait();
 
-	time2 = getCPUusage();
+    time2 = getCPUusage();
 
-	calUsage(time1, time2);
+    calUsage(time1, time2);
 
-	getRAM();
+    getRAM();
 
-	getDisk();
+    getDisk();
 
     printf("\nCPU speed:\n");
     printf("all events: %d\n", request_num); // 所有线程完成的event个数
@@ -397,9 +401,9 @@ int main(void) {
     printf("total time: %.1fms\n", Total_time); // 总消耗时间
 
     printf("\nthreads:\n");
-	printf("num_threads: %d\n",num_threads);
+    printf("num_threads: %d\n",num_threads);
     printf("events per thread: %0.3f \n", request_num / (float)num_threads); // 平均每个线程完成envet的个数
     printf("time per thread: %0.3fms\n", thread_time / num_threads); // 平均每个线程平均耗时
 
-	return 0;
+    return 0;
 }
