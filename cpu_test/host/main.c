@@ -23,6 +23,7 @@ double thread_time = 0.0;
 
 pthread_mutex_t mut; //互斥锁类型
 
+/* 函数功能：获取cpu使用情况 */
 int * getCPUusage(){
 	FILE *fp = NULL;
 
@@ -108,6 +109,7 @@ int * getCPUusage(){
 	return time;
 }
 
+/* 函数功能：将两次的cpu使用情况进行运算，得到cpu利用率 */
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
@@ -119,6 +121,7 @@ float calUsage(int * time1,int * time2){
 
 }
 
+/* 函数功能：获取RAM利用率 */
 void getRAM(){
 	char buff[80];
 	FILE *fp=popen("free", "r");
@@ -161,7 +164,7 @@ void getRAM(){
 	printf("---RAM Used Percentage is %.2f%\n",used / (float)(total/100.0));
 }
 
-
+/* 函数功能：获取磁盘利用率 */
 void getDisk(){
 	char buff[80];
 	FILE *fp=popen("df -h", "r");
@@ -207,7 +210,7 @@ void getDisk(){
 
 }
 
-
+/* 函数功能：做素数运算。在这里调用ta里的素数运算方法 */
 void primeCalculate(){
 
 	TEEC_Result res;
@@ -218,6 +221,7 @@ void primeCalculate(){
 	uint32_t err_origin;
 
 	double ta_time, temp1, temp2;
+	// 初始化时间变量，用于计算与ta通信时的准备工作（初始化上下文、打开session）的时间
 	struct timeval start1, end1;
 	gettimeofday( &start1, NULL );
 
@@ -230,20 +234,26 @@ void primeCalculate(){
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_Opensession failed with code 0x%x origin 0x%x", res, err_origin);
 	gettimeofday( &end1, NULL );
+	// temp1为打开ta的准备工作的时间
 	temp1 = 1000000 * ( end1.tv_sec - start1.tv_sec ) + end1.tv_usec - start1.tv_usec;
 
 	memset(&op, 0, sizeof(op));
-
+	// 定义要传给ta的参数类型，为：数值型，input同时函数返回时output该变量
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
 					 TEEC_NONE, TEEC_NONE);
+	
+	// 给传入ta的变量赋值，为计算的素数上限
 	op.params[0].value.a = max_prime;
-
+	
+	// 调用ta里的对应方法，TA_CL_CPU_TEST_CMD_RUN_TEST 为方法名，定义在路径 /ta/include/ 下的.h头文件中
 	res = TEEC_InvokeCommand(&sess, TA_CL_CPU_TEST_CMD_RUN_TEST, &op,
 				 &err_origin);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
+	// 此时打印出来的值为ta里的方法计算后的值
 	printf("return!!!%d\n", op.params[0].value.a);
 
+	// 用于计算与ta通信时的收尾工作（关闭上下文、关闭session）的时间
 	struct timeval start2, end2;
 	gettimeofday( &start2, NULL );
 
@@ -252,13 +262,16 @@ void primeCalculate(){
 	TEEC_FinalizeContext(&ctx);
 
 	gettimeofday( &end2, NULL );
+	// temp2为关闭ta的收尾工作的时间
 	temp2 = 1000000 * ( end2.tv_sec - start2.tv_sec ) + end2.tv_usec - start2.tv_usec;
 
+	// ta花费的时间为 准备工作的时间+收尾工作的时间
 	ta_time = temp1 + temp2;
 	printf("------------------ta_time: %.1fμs\n", ta_time);
 
 }
 
+/* 函数功能：由max_request控制程序执行次数 */
 void test(){
     	struct timeval start, end;  // 定义第一次调用CPU时钟单位的时间，可以理解为定义一个计数器
 	gettimeofday( &start, NULL );  // 获取进入要测试执行时间代码段之前的CPU时间占用值
@@ -276,7 +289,7 @@ void test(){
         	Total_time = setTimer(Total_time);
     	}
 }
-
+/* 函数功能：由max_time控制程序执行次数，当当前执行时间小于用户指定的程序运行时间时，就再次执行计算素数的方法 */
 double setTimer(double Total_time){
     	struct timeval start, end;
     	double Total_time2, sum_time;
@@ -337,6 +350,7 @@ int main(void) {
 
     	char input[50];
 
+	// 获取用户输入
     	printf("initialization parameter: \n");
     	printf("num_threads: %d\n",num_threads);
     	printf("max_prime: %d\n",max_prime);
@@ -361,6 +375,7 @@ int main(void) {
         	i ++;
     	}
 
+	// 分析用户输入，存入指定变量
 	int j;
    	for(j = 0; j < 50; j ++){
    	    if(arr[j] != NULL){
@@ -376,6 +391,7 @@ int main(void) {
             }
 	}
 
+	// 赋值后的变量，显示给用户以作为二次检查
     	printf("\nmax_prime: %d\n",max_prime);
     	printf("max_time / μs: %.3f\n",max_time);
     	printf("max_request: %d\n",max_request);
