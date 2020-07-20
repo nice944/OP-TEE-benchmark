@@ -31,6 +31,7 @@ double Total_time = 0.0;
 
 pthread_mutex_t mut; //互斥锁类型
 
+/* 函数功能：获取cpu使用情况 */
 int * getCPUusage(){
 	FILE *fp = NULL;
 
@@ -116,6 +117,7 @@ int * getCPUusage(){
 	return time;
 }
 
+/* 函数功能：将两次的cpu使用情况进行运算，得到cpu利用率 */
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
@@ -127,6 +129,7 @@ float calUsage(int * time1,int * time2){
 
 }
 
+/* 函数功能：获取RAM利用率 */
 void getRAM(){
 	char buff[80];
 	FILE *fp=popen("free", "r");
@@ -169,7 +172,7 @@ void getRAM(){
 	printf("---RAM Used Percentage is %.2f%\n",used / (float)(total/100.0));
 }
 
-
+/* 函数功能：获取磁盘利用率 */
 void getDisk(){
 	char buff[80];
 	FILE *fp=popen("df -h", "r");
@@ -248,27 +251,24 @@ void *myThread(){
 
 	int i;
 	int temp;
-	temp = mutex_locks;
+	temp = mutex_locks;  // 控制mutex_loop的次数
 	for(; temp > 0; temp--){
-        current_lock = rand() % mutex_num;
-        for (i = 0; i < mutex_loops; i++)
-        c ++;
-
+		current_lock = rand() % mutex_num;  // mutex_num为互斥锁数量，lock用的锁是从mutex_num中随机选择一个
+		for (i = 0; i < mutex_loops; i++)
+			c ++;
+		
 		pthread_mutex_lock(&thread_locks[current_lock].mutex);
 		res = TEEC_InvokeCommand(&sess, TA_CL_MUTEX_TEST_CMD_RUN_TEST, &op,
 					 &err_origin);
 		if (res != TEEC_SUCCESS)
-			errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
-				res, err_origin);
+			errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
 		pthread_mutex_unlock(&thread_locks[current_lock].mutex);
    	}
-
 	request_num ++;
 
 	pthread_mutex_unlock(&mut); //解锁
 
 	TEEC_CloseSession(&sess);
-
 	TEEC_FinalizeContext(&ctx);
 
 }
@@ -299,6 +299,7 @@ int main(void)
 
 	char input[50];
 
+	// 获取用户输入
 	printf("initialization parameter: \n");
 	printf("mutex_num: %d\n",mutex_num);
 	printf("mutex_loops: %d\n",mutex_loops);
@@ -322,6 +323,7 @@ int main(void)
 		i ++;
 	}
 
+	// 分析用户输入，存入指定变量
 	int j;
 	for(j = 0; j < 50; j ++){
 		if(arr[j] != NULL){
@@ -337,6 +339,7 @@ int main(void)
 		}
 	}
 
+	// 赋值后的变量，显示给用户以作为二次检查
 	printf("\nmutex_num: %d\n",mutex_num);
 	printf("mutex_loops: %d\n",mutex_loops);
 	printf("mutex_locks: %d\n",mutex_locks);
@@ -351,12 +354,14 @@ int main(void)
 	}
 
 	int m;
+	// 初始化互斥锁
 	for (m = 0; m < mutex_num; m ++)
 		pthread_mutex_init(&thread_locks[m].mutex, NULL);
 
 	thread_create();
 	thread_wait();
 
+	// 销毁互斥锁
 	for(m = 0; m < mutex_num; m ++)
 		pthread_mutex_destroy(&thread_locks[m].mutex);
 	free(thread_locks);
