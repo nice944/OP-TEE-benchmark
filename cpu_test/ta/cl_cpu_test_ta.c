@@ -46,6 +46,7 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 	IMSG("Goodbye!\n");
 }
 
+/* ta里不允许math.h的引用，因此算术平方根的计算要自己实现 */
 double mySqrt(int num){
     double pre = 1e-7;  // 精度
     double low = 0.0;
@@ -63,6 +64,7 @@ double mySqrt(int num){
     return (low + high) / 2;
 }
 
+/* 要调用的功能定义在该函数中 */
 static TEE_Result run_test(uint32_t param_types,
 	TEE_Param params[4])
 {
@@ -79,16 +81,16 @@ static TEE_Result run_test(uint32_t param_types,
 	IMSG("Got value: %u from NW", params[0].value.a);
 
 
-    long j, k;
-    for(j = 1; j <= max_prime; j ++){  // 求max_prime范围内的素数个数
-        for(k = 2; k < mySqrt(j); k ++){
-            if(j % k == 0)
-                break;
-        }
-        if(k > mySqrt(j) && j != 1)
-            printf("%ld ", j);
-    }
-
+	long j, k;
+	for(j = 1; j <= max_prime; j ++){ 
+	// 求max_prime范围内的素数个数
+		for(k = 2; k < mySqrt(j); k ++){
+			if(j % k == 0)
+				break;
+		}
+		if(k > mySqrt(j) && j != 1)
+			printf("%ld ", j);
+	}
 	return TEE_SUCCESS;
 }
 
