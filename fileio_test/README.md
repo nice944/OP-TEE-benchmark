@@ -4,11 +4,13 @@ File IO tests include creating files, reading files, and deleting files
 
 Input：
 
---num-threads=N         number of threads to use [1]
+--num-threads=N               number of threads to use [1]
 
---file-num=N            number of test files created [10]
+--write-file-num=N            number of write operations [10]
 
---TEST_OBJECT_SIZE=N    file size [7K]
+--read-file-num=N             number of read operations [10]
+
+--test-object-size=N          file size [7K]
 
 ·
 
