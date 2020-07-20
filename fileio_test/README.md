@@ -16,7 +16,7 @@ Input：
 
 Output：
 
-CPU speed: 
+fileio speed: 
 
 total time；all events；events per m-second；The average running time per event。
 
