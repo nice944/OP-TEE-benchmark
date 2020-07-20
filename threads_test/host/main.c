@@ -11,6 +11,13 @@
 #include <cl_threads_test_ta.h>
 
 #define YIELD sched_yield
+/*
+pthread_yield	释放 CPU 来运行另外一个线程
+一个线程逻辑上没有阻塞，但感觉上它已经运行了足够长的时间并且希望给另外一个线程机会去运行。这时候可以通过 pthread_yield 来完成。
+sched_yield()会让出当前线程的CPU占有权
+有策略的调用sched_yield()能在资源竞争情况很严重时，通过给其他的线程或进程运行机会的方式来提升程序的性能。
+也就是说，调用sched_yield()能让你的当前线程让出资源，通过一定的策略调用sched_yield()满足你的业务要求可以保证各个线程或进程都有机会运行。
+*/
 
 // 定义全局变量
 int num_threads = 1;
@@ -25,6 +32,7 @@ double thread_time = 0.0;
 
 pthread_mutex_t mut; //互斥锁类型
 
+/* 函数功能：获取cpu使用情况 */
 int * getCPUusage(){
 	FILE *fp = NULL;
 
@@ -110,6 +118,7 @@ int * getCPUusage(){
 	return time;
 }
 
+/* 函数功能：将两次的cpu使用情况进行运算，得到cpu利用率 */
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
@@ -121,6 +130,7 @@ float calUsage(int * time1,int * time2){
 
 }
 
+/* 函数功能：获取RAM利用率 */
 void getRAM(){
 	char buff[80];
 	FILE *fp=popen("free", "r");
@@ -163,7 +173,7 @@ void getRAM(){
 	printf("---RAM Used Percentage is %.2f%\n",used / (float)(total/100.0));
 }
 
-
+/* 函数功能：获取磁盘利用率 */
 void getDisk(){
 	char buff[80];
 	FILE *fp=popen("df -h", "r");
@@ -219,7 +229,6 @@ void *myThread(){
 	TEEC_UUID uuid = TA_CL_THREADS_TEST_UUID;
 	uint32_t err_origin;
 
-
 	res = TEEC_InitializeContext(NULL, &ctx);
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
@@ -253,7 +262,6 @@ void *myThread(){
 	pthread_mutex_unlock(&mut); //解锁
 
 	TEEC_CloseSession(&sess);
-
 	TEEC_FinalizeContext(&ctx);
 }
 
@@ -282,6 +290,7 @@ int main(void)
 	double Total_time;
 	char input[50];
 
+	// 获取用户输入
 	printf("initialization parameter: \n");
 	printf("number of yields to do per request: %d\n",thread_yields);
 	printf("number of locks per thread: %d\n",thread_locks);
@@ -304,6 +313,7 @@ int main(void)
 		i ++;
 	}
 
+	// 分析用户输入，存入指定变量
 	int j;
 	for(j = 0; j < 50; j ++){
 		if(arr[j] != NULL){
@@ -318,6 +328,8 @@ int main(void)
 			}
 		}
 	}
+	
+	// 赋值后的变量，显示给用户以作为二次检查
 	printf("\nnumber of yields to do per request: %d\n",thread_yields);
 	printf("number of locks per thread: %d\n",thread_locks);
 	printf("max_requests: %d\n",max_requests);
