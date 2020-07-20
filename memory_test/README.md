@@ -1,7 +1,27 @@
-# memory test
+# Memory functions speed test
 
-内存分配测试包括四种形式：顺序写、顺序读、随机写、随机读。
+Memory allocation tests include four forms: sequential write, sequential read, random write, and random read.
 
-输入：线程数（默认为1）；需要分配的内存块的总大小（默认100M）；每次分配的块的大小（默认8K）；执行方法（顺序/随机，默认-顺序）；操作（读/写，默认-写）。
+Input：
 
-输出：CPU speed: 总消耗时间；所有线程完成的event个数；所有线程平均每秒完成event的个数；平均每个event的运行时间。 threads: 平均每个线程完成envet的个数；平均每个线程完成envet的个数。
+--num-threads=N             number of threads to use [1]
+
+--memory-block-size=SIZE    size of memory block for test [8K]
+
+--memory-total-size=SIZE    total size of data to transfer [100M]
+
+--memory-oper=STRING        type of memory operations {read, write} [write]
+
+--memory-access-mode=STRING memory access mode {seq, rnd} [seq]
+
+·
+
+Output：
+
+CPU speed: 
+
+total time；all events；events per m-second；The average running time per event。
+
+threads:  
+
+num_threads；events per thread；time per thread。
