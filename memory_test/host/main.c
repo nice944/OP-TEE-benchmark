@@ -31,14 +31,10 @@ uint32_t err_origin;
 
 double Total_time;
 
-/* Statistics */
 static unsigned int total_ops;
 static long long    total_bytes;
 static long long    last_bytes;
 
-/* Array of per-thread buffers */
-
-/* Global buffer */
 static int *buffer;
 static int **buffers;
 
@@ -47,6 +43,7 @@ static int **buffers;
 
 pthread_mutex_t mut; //互斥锁类型
 
+/* 函数功能：获取cpu使用情况 */
 int * getCPUusage(){
 	FILE *fp = NULL;
 
@@ -132,6 +129,7 @@ int * getCPUusage(){
 	return time;
 }
 
+/* 函数功能：将两次的cpu使用情况进行运算，得到cpu利用率 */
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
@@ -143,6 +141,7 @@ float calUsage(int * time1,int * time2){
 
 }
 
+/* 函数功能：获取RAM利用率 */
 void getRAM(){
 	char buff[80];
 	FILE *fp=popen("free", "r");
@@ -185,7 +184,7 @@ void getRAM(){
 	printf("---RAM Used Percentage is %.2f%\n",used / (float)(total/100.0));
 }
 
-
+/* 函数功能：获取磁盘利用率 */
 void getDisk(){
 	char buff[80];
 	FILE *fp=popen("df -h", "r");
@@ -231,7 +230,7 @@ void getDisk(){
 
 }
 
-
+/* 函数功能：根据需要执行顺序写、顺序读或随机写、随机读 */
 void test(){
 	TEEC_Result res;
 	TEEC_Context ctx;
@@ -251,7 +250,6 @@ void test(){
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
 
-
 	res = TEEC_OpenSession(&ctx, &sess, &uuid,
 			       TEEC_LOGIN_PUBLIC, NULL, NULL, &err_origin);
 	if (res != TEEC_SUCCESS)
@@ -263,107 +261,92 @@ void test(){
 
 	memset(&op, 0, sizeof(op));
 
-	int rands;
+	end = (int *)((char *)buf + memory_block_size);
+	
+	int rands, i;
 	if(strcmp(memory_access_mode, "rnd") == 0){
-	    printf("---");
-            srand(time(NULL));
-            rands = (rand() % SB_MAX_RND);
+	// 随机操作
+		printf("---");
+		srand(time(NULL));  // 随机数种子
+		rands = (rand() % SB_MAX_RND);
 
-            switch (memory_oper_num) {
-              case 1:
-                while (total_bytes < memory_total_size){
-                    printf("case1");
-                    total_ops++;
-                    total_bytes += memory_block_size;
+		switch (memory_oper_num) {
+		// 1：write; 2：read
+			case 1:
+				for (i = 0; i < memory_block_size; i++) {
+					//printf("case1");
+					op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
+									 TEEC_MEMREF_TEMP_INPUT, TEEC_NONE);
+					op.params[0].value.a = memory_block_size;
+					op.params[1].value.a = rands;
+					op.params[2].tmpref.buffer = buf;
+					op.params[2].tmpref.size = sizeof(buf);
+					res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_RND_WRITE, &op, &err_origin);
+					if (res != TEEC_SUCCESS)
+						errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
+						     res, err_origin);
+					printf("rndw ");
+				}
+				break;
+			case 2:
+				for (i = 0; i < memory_block_size; i++) {
+					op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
+									 TEEC_MEMREF_TEMP_INPUT, TEEC_NONE);
+					op.params[0].value.a = memory_block_size;
+					op.params[1].value.a = rands;
+					op.params[2].tmpref.buffer = buf;
+					op.params[2].tmpref.size = sizeof(buf);
 
-                    op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
-                                     TEEC_MEMREF_TEMP_INPUT, TEEC_NONE);
-                    op.params[0].value.a = memory_block_size;
-                    op.params[1].value.a = rands;
-                    op.params[2].tmpref.buffer = buf;
-                    op.params[2].tmpref.size = sizeof(buf);
-                    res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_RND_WRITE, &op, &err_origin);
-                    if (res != TEEC_SUCCESS)
-                        errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
-                            res, err_origin);
-
-                    printf("rndw ");
-                }
-                total_bytes = 0;
-                break;
-              case 2:
-                while (total_bytes < memory_total_size){
-                   	total_ops++;
-                    total_bytes += memory_block_size;
-
-                    op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
-                                     TEEC_MEMREF_TEMP_INPUT, TEEC_NONE);
-                    op.params[0].value.a = memory_block_size;
-                    op.params[1].value.a = rands;
-                    op.params[2].tmpref.buffer = buf;
-                    op.params[2].tmpref.size = sizeof(buf);
-
-                    res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_RND_READ, &op, &err_origin);
-                    if (res != TEEC_SUCCESS)
-                        errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
-
-                    printf("rndr ");
-                }
-                total_bytes = 0;
-                break;
-              default:
-                printf("Unknown memory request type:%d. Aborting...\n");
-                return 1;
-            }
-        } else{
-	    printf("+++");
-            switch (memory_oper_num) {
-              case 1:
-                while (total_bytes < memory_total_size){
-                    total_ops++;
-                    total_bytes += memory_block_size;
-
-                    op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_NONE,
-                             TEEC_NONE, TEEC_NONE);
-                    //op.params[0].value.a = memory_block_size;
-                    op.params[0].tmpref.buffer = buf;
-                    op.params[0].tmpref.size = sizeof(buf);
-
-                    res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_SEQ_WRITE, &op, &err_origin);
-                    if (res != TEEC_SUCCESS)
-                        errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
-                    printf("seqw ");
-                }
-                total_bytes = 0;
-                break;
-              case 2:
-                while (total_bytes < memory_total_size){
-                    total_ops++;
-                    total_bytes += memory_block_size;
-
-                    op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_NONE,
-                             TEEC_NONE, TEEC_NONE);
-                    //op.params[0].value.a = memory_block_size;
-                    op.params[0].tmpref.buffer = buf;
-                    op.params[0].tmpref.size = sizeof(buf);
-
-                    res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_SEQ_READ, &op, &err_origin);
-                    if (res != TEEC_SUCCESS)
-                        errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
-                    printf("seqr ");
-                }
-                total_bytes = 0;
-                break;
-              default:
-                printf("Unknown memory request type:%d. Aborting...\n");
-                return 1;
-            }
-        }
+					res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_RND_READ, &op, &err_origin);
+					if (res != TEEC_SUCCESS)
+						errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
+					printf("rndr ");
+				}
+				break;
+			default:
+				printf("Unknown memory request type:%d. Aborting...\n");
+				return 1;
+		}
+	} else{
+	// 顺序操作
+		printf("+++");
+		switch (memory_oper_num) {
+		// 1：write; 2：read
+			case 1:
+				for (; buf < end; buf++) {
+					op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_NONE,
+									 TEEC_NONE, TEEC_NONE);
+					//op.params[0].value.a = memory_block_size;
+					op.params[0].tmpref.buffer = buf;
+					op.params[0].tmpref.size = sizeof(buf);
+					res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_SEQ_WRITE, &op, &err_origin);
+					if (res != TEEC_SUCCESS)
+						errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
+					printf("seqw ");
+				}
+				break;
+			case 2:
+				for (; buf < end; buf++) {
+					op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_NONE,
+									 TEEC_NONE, TEEC_NONE);
+					//op.params[0].value.a = memory_block_size;
+					op.params[0].tmpref.buffer = buf;
+					op.params[0].tmpref.size = sizeof(buf);
+					res = TEEC_InvokeCommand(&sess, TA_CL_MEMORY_TEST_CMD_SEQ_READ, &op, &err_origin);
+					if (res != TEEC_SUCCESS)
+						errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x", res, err_origin);
+					printf("seqr ");
+				}
+				break;
+			default:
+				printf("Unknown memory request type:%d. Aborting...\n");
+				return 1;
+		}
+	}
 	struct timeval ta_start2, ta_end2;
     	gettimeofday( &ta_start2, NULL );
 
 	TEEC_CloseSession(&sess);
-
 	TEEC_FinalizeContext(&ctx);
 
 	gettimeofday( &ta_end2, NULL );
@@ -404,6 +387,7 @@ void thread_wait(void){
     	}
 }
 
+/* 函数功能：初始化 */
 int memory_init(void){
         buffers = (int **)malloc(num_threads * sizeof(char *));
         if (buffers == NULL){
@@ -418,8 +402,19 @@ int memory_init(void){
             }
             memset(buffers[i], 0, memory_block_size);
         }
-
-
+	
+	pthread_mutex_lock(&mut); 
+  	if (total_bytes >= memory_total_size) {
+		pthread_mutex_unlock(&mut);
+		return 1;
+	} else {
+		while (total_bytes < memory_total_size){
+			total_ops++;
+			total_bytes += memory_block_size;   // 每次分配block_size大小的内存块，一直到分配的内存块总数达到total_size
+		}
+		pthread_mutex_unlock(&mut);
+	}
+	
     	return 0;
 }
 
@@ -430,6 +425,7 @@ int main(void)
 
 	char input[50];
 
+	// 获取用户输入
 	printf("initialization parameter:\n");
     	printf("memory_block_size: %dK\n",memory_block_size / 1024);
     	printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
@@ -454,6 +450,7 @@ int main(void)
         	m ++;
     	}
 
+	// 分析用户输入，存入指定变量
 	int j;
     	for(j = 0; j < 50; j ++){
         	if(arr[j] != NULL){
@@ -478,7 +475,7 @@ int main(void)
         	}
     	}
 
-
+	// 赋值后的变量，显示给用户以作为二次检查
     	printf("\nmemory_block_size: %dK\n",memory_block_size / 1024);
     	printf("memory_total_size: %dG\n",memory_total_size / 1024 / 1024);
     	printf("memory_oper: %s\n",memory_oper);
@@ -489,6 +486,7 @@ int main(void)
 
     	memory_init();
 
+	// 用默认属性初始化互斥锁
 	pthread_mutex_init(&mut, NULL);
     	thread_create();
     	thread_wait();
@@ -520,5 +518,3 @@ int main(void)
     	printf("time per thread: %0.3fμs\n", thread_time / num_threads); // 平均每个线程平均耗时
     	return 0;
 }
-
-
