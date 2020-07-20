@@ -1,7 +1,23 @@
-# fileio test
+# File I/O test
 
-文件io包括创建文件、读文件和删除文件
+File IO tests include creating files, reading files, and deleting files
 
-输入：线程数（默认为1）; 写文件数（默认为10）; 读文件数（默认为10）.
+Input：
 
-输出：fileio speed:总消耗时间; 文件大小; 写操作花费时间; 读操作花费时间; 删除操作花费时间. threads: 平均每个线程完成envet的个数; 平均每个线程完成envet的个数.
+--num-threads=N         number of threads to use [1]
+
+--file-num=N            number of test files created [10]
+
+--TEST_OBJECT_SIZE=N    file size [7K]
+
+·
+
+Output：
+
+CPU speed: 
+
+total time；all events；events per m-second；The average running time per event。
+
+threads:  
+
+num_threads；events per thread；time per thread。
