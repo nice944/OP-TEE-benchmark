@@ -18,7 +18,7 @@ Input：
 
 Output：
 
-CPU speed: 
+memory speed: 
 
 total time；all events；events per m-second；The average running time per event。
 
