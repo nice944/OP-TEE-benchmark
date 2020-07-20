@@ -30,6 +30,7 @@ double delete_time;
 
 pthread_mutex_t mut; //互斥锁类型
 
+/* 函数功能：获取cpu使用情况 */
 int * getCPUusage(){
 	FILE *fp = NULL;
 
@@ -115,6 +116,7 @@ int * getCPUusage(){
 	return time;
 }
 
+/* 函数功能：将两次的cpu使用情况进行运算，得到cpu利用率 */
 float calUsage(int * time1,int * time2){
 	int idle1 = *(time1 + 3) + *(time1 + 4);
 	int idle2 = *(time2 + 3) + *(time2 + 4);
@@ -126,6 +128,7 @@ float calUsage(int * time1,int * time2){
 
 }
 
+/* 函数功能：获取RAM利用率 */
 void getRAM(){
 	char buff[80];
 	FILE *fp=popen("free", "r");
@@ -168,7 +171,7 @@ void getRAM(){
 	printf("---RAM Used Percentage is %.2f%\n",used / (float)(total/100.0));
 }
 
-
+/* 函数功能：获取磁盘利用率 */
 void getDisk(){
 	char buff[80];
 	FILE *fp=popen("df -h", "r");
@@ -214,7 +217,7 @@ void getDisk(){
 
 }
 
-
+/* 函数功能：将与ta通信时的准备工作封装成一个函数，该函数完成 initializeContext 和 openSession */
 void prepare_tee_session(struct test_ctx *ctx) {
 	TEEC_UUID uuid = TA_CL_FILEIO_TEST_UUID;
 	uint32_t origin;
@@ -233,11 +236,13 @@ void prepare_tee_session(struct test_ctx *ctx) {
 			res, origin);
 }
 
+/* 函数功能：将与ta通信结束时的收尾工作封装成一个函数，该函数完成 closeSession 和 finalizeContext */
 void terminate_tee_session(struct test_ctx *ctx) {
 	TEEC_CloseSession(&ctx->sess);
 	TEEC_FinalizeContext(&ctx->ctx);
 }
 
+/* 函数功能：读文件 */
 TEEC_Result read_secure_object(struct test_ctx *ctx, char *id,
 			char *data, size_t data_len) {
 	TEEC_Operation op;
@@ -246,16 +251,18 @@ TEEC_Result read_secure_object(struct test_ctx *ctx, char *id,
 	size_t id_len = strlen(id);
 
 	memset(&op, 0, sizeof(op));
+	// 传入ta的参数类型为：临时存储区，该类型要定义存储的内容和存储长度
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_MEMREF_TEMP_OUTPUT,
 					 TEEC_NONE, TEEC_NONE);
-
+	// 参数赋值
 	op.params[0].tmpref.buffer = id;
 	op.params[0].tmpref.size = id_len;
 
 	op.params[1].tmpref.buffer = data;
 	op.params[1].tmpref.size = data_len;
 
+	// 调用ta里的对应方法，TA_CL_FILEIO_TEST_CMD_READ_RAW 为方法名，定义在路径 /ta/include/ 下的.h头文件中
 	res = TEEC_InvokeCommand(&ctx->sess,
 				 TA_CL_FILEIO_TEST_CMD_READ_RAW,
 				 &op, &origin);
@@ -271,6 +278,7 @@ TEEC_Result read_secure_object(struct test_ctx *ctx, char *id,
 	return res;
 }
 
+/* 函数功能：写文件 */
 TEEC_Result write_secure_object(struct test_ctx *ctx, char *id,
 			char *data, size_t data_len) {
 	TEEC_Operation op;
@@ -279,16 +287,18 @@ TEEC_Result write_secure_object(struct test_ctx *ctx, char *id,
 	size_t id_len = strlen(id);
 
 	memset(&op, 0, sizeof(op));
+	// 传入ta的参数类型为：临时存储区，该类型要定义存储的内容和存储长度
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_NONE, TEEC_NONE);
-
+	// 参数赋值
 	op.params[0].tmpref.buffer = id;
 	op.params[0].tmpref.size = id_len;
 
 	op.params[1].tmpref.buffer = data;
 	op.params[1].tmpref.size = data_len;
 
+	// 调用ta里的对应方法，TA_CL_FILEIO_TEST_CMD_WRITE_RAW 为方法名，定义在路径 /ta/include/ 下的.h头文件中
 	res = TEEC_InvokeCommand(&ctx->sess,
 				 TA_CL_FILEIO_TEST_CMD_WRITE_RAW,
 				 &op, &origin);
@@ -305,6 +315,7 @@ TEEC_Result write_secure_object(struct test_ctx *ctx, char *id,
 	return res;
 }
 
+/* 函数功能：删除文件 */
 TEEC_Result delete_secure_object(struct test_ctx *ctx, char *id) {
 	TEEC_Operation op;
 	uint32_t origin;
@@ -312,12 +323,14 @@ TEEC_Result delete_secure_object(struct test_ctx *ctx, char *id) {
 	size_t id_len = strlen(id);
 
 	memset(&op, 0, sizeof(op));
+	// 传入ta的参数类型为：临时存储区，该类型要定义存储的内容和存储长度
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_NONE, TEEC_NONE, TEEC_NONE);
-
+	// 参数赋值
 	op.params[0].tmpref.buffer = id;
 	op.params[0].tmpref.size = id_len;
 
+	// 调用ta里的对应方法，TA_CL_FILEIO_TEST_CMD_DELETE 为方法名，定义在路径 /ta/include/ 下的.h头文件中
 	res = TEEC_InvokeCommand(&ctx->sess,
 				 TA_CL_FILEIO_TEST_CMD_DELETE,
 				 &op, &origin);
@@ -333,6 +346,7 @@ TEEC_Result delete_secure_object(struct test_ctx *ctx, char *id) {
 	return res;
 }
 
+/* 函数功能：根据需要进行文件读或写 */
 void test(){
 	struct test_ctx ctx;
 	char obj1_id[] = "object#1";		/* string identification for the object */
@@ -345,6 +359,7 @@ void test(){
 	prepare_tee_session(&ctx);
 
 	int m;
+	// 写文件
 	for(m = 0; m < write_num; m ++){
 
 		memset(obj1_data, 0xA1, sizeof(obj1_data));
@@ -355,7 +370,7 @@ void test(){
 			errx(1, "Failed to create an object in the secure storage");
 	}
 
-
+	// 读文件
 	for(m = 0; m < read_num; m ++){
 
 		res = read_secure_object(&ctx, obj1_id,
@@ -413,6 +428,7 @@ int main(void) {
 
 	char input[50];
 
+	// 获取用户输入
 	printf("initialization parameter: \n");
     	printf("num_threads: %d\n",num_threads);
     	printf("write_num: %d\n",write_num);
@@ -437,6 +453,7 @@ int main(void) {
         	i ++;
     	}
 
+	// 分析用户输入，存入指定变量
 	int j;
     	for(j = 0; j < 50; j ++){
         	if(arr[j] != NULL){
@@ -452,6 +469,7 @@ int main(void) {
         	}
     	}
 
+	// 赋值后的变量，显示给用户以作为二次检查
 	printf("\nnum_threads: %d\n",num_threads);
     	printf("write_num: %d\n",write_num);
     	printf("read_num: %d\n",read_num);
@@ -460,8 +478,8 @@ int main(void) {
 	gettimeofday( &total_start, NULL );
 
 	struct test_ctx ctx;
-	char obj1_id[] = "object#1";		/* string identification for the object */
-	char obj2_id[] = "object#2";		/* string identification for the object */
+	char obj1_id[] = "object#1";
+	char obj2_id[] = "object#2";
 	char obj1_data[TEST_OBJECT_SIZE];
 	char read_data[TEST_OBJECT_SIZE];
 	TEEC_Result res;
@@ -469,15 +487,13 @@ int main(void) {
 	printf("Prepare session with the TA\n");
 	prepare_tee_session(&ctx);
 
-	/*
-	 * Create object, read it, delete it.
-	 */
 	struct timeval write_start, write_end;
 
 	gettimeofday( &write_start, NULL );
 
 	printf("\n- Create and load object in the TA secure storage\n");
 	int m;
+	// 写
 	for(m = 0; m < write_num; m ++){
 		memset(obj1_data, 0xA1, sizeof(obj1_data));
 
@@ -495,6 +511,7 @@ int main(void) {
 	gettimeofday( &read_start, NULL );
 
 	printf("\n- Read back the object\n");
+	// 读
 	for(m = 0; m < read_num; m ++){
 
 		res = read_secure_object(&ctx, obj1_id,
@@ -512,7 +529,7 @@ int main(void) {
 	gettimeofday( &delete_start, NULL );
 
 	printf("- Delete the object\n");
-
+	// 删除
 	res = delete_secure_object(&ctx, obj1_id);
 	if (res != TEEC_SUCCESS)
 		errx(1, "Failed to delete the object: 0x%x", res);
@@ -523,11 +540,10 @@ int main(void) {
 	gettimeofday( &delete_end, NULL );
     	delete_time = 1000000 * ( delete_end.tv_sec - delete_start.tv_sec ) + delete_end.tv_usec - delete_start.tv_usec;
 
+	// 用默认属性初始化互斥锁
 	pthread_mutex_init(&mut, NULL);
     	thread_create();
     	thread_wait();
-
-	printf("\nfileio speed:\n");
 
 	time2 = getCPUusage();
 
@@ -540,15 +556,17 @@ int main(void) {
 	gettimeofday( &total_end, NULL );
 
 	Total_time = 1000000 * ( total_end.tv_sec - total_start.tv_sec ) + total_end.tv_usec - total_start.tv_usec;
-	printf("total time: %.1fms\n", Total_time); // 总消耗时间
-    	printf("file size: %.1fK\n", TEST_OBJECT_SIZE / (float)1024);
-    	printf("write num:%d  write time: %.1f\n", write_num, write_time);
-    	printf("read num:%d   read time: %.1f\n", read_num, read_time);
-	printf("delete time: %.1f\n", delete_time);
+	
+	printf("\nfileio speed:\n");
+	printf("total time: %.1fms\n", Total_time);  // 总消耗时间
+    	printf("file size: %.1fK\n", TEST_OBJECT_SIZE / (float)1024);  // 文件大小
+    	printf("write num:%d  write time: %.1f\n", write_num, write_time);  // 写操作花费时间
+    	printf("read num:%d   read time: %.1f\n", read_num, read_time);  // 读操作花费时间
+	printf("delete time: %.1f\n", delete_time);  // 删除操作花费时间
 
     	printf("\nthreads:\n");
-	printf("num_threads: %d\n",num_threads);
-    	printf("time per thread: %0.1fms\n", thread_time / num_threads); // 平均每个线程平均耗时
+	printf("num_threads: %d\n",num_threads);  // 线程数
+    	printf("time per thread: %0.1fms\n", thread_time / num_threads); // 每个线程平均耗时
 
 	return 0;
 }
